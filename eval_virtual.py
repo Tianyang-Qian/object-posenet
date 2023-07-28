@@ -3,7 +3,7 @@ import argparse
 import numpy as np
 import torch
 from torch.autograd import Variable
-from datasets.linemod.dataset import PoseDataset
+from datasets.VirtualData.dataset import PoseDataset
 from lib.network import PoseNet
 from lib.ransac_voting.ransac_voting_gpu import ransac_voting_layer
 from lib.transformations import quaternion_matrix
@@ -12,17 +12,16 @@ from lib.knn.__init__ import KNearestNeighbor
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu_id', type=str, default='0', help='GPU id')
-parser.add_argument('--model', type=str, default='results/linemod/pose_model_49_0.010192.pth',  help='Evaluation model')
-parser.add_argument('--dataset_root', type=str, default='datasets/linemod/Linemod_preprocessed', help='dataset root dir')
+parser.add_argument('--model', type=str, default='results/virtual/pose_model_49_0.005636.pth',  help='Evaluation model')
+parser.add_argument('--dataset_root', type=str, default='datasets/VirtualData/data', help='dataset root dir')
 opt = parser.parse_args()
 
-num_objects = 13
-objlist = [1, 2, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15]
-num_points = 500
+num_objects = 1
+num_points = 1000
 num_rotations = 60
 bs = 1
-dataset_config_dir = 'datasets/linemod/dataset_config'
-output_result_dir = 'results/eval_linemod'
+# dataset_config_dir = 'datasets/VirtualData/dataset_config'
+output_result_dir = 'results/eval_virtual'
 if not os.path.exists(output_result_dir):
     os.makedirs(output_result_dir)
 knn = KNearestNeighbor(1)
@@ -90,8 +89,8 @@ for i, data in enumerate(test_dataloader, 0):
 accuracy = 0.0
 for i in range(num_objects):
     accuracy += float(success_count[i]) / num_count[i]
-    print('Object {0} success rate: {1}'.format(objlist[i], float(success_count[i]) / num_count[i]))
-    fw.write('Object {0} success rate: {1}\n'.format(objlist[i], float(success_count[i]) / num_count[i]))
+    print('success rate: {0}'.format(float(success_count[i]) / num_count[i]))
+    fw.write('success rate: {0}\n'.format(float(success_count[i]) / num_count[i]))
 print('ALL success rate: {0}'.format(float(sum(success_count)) / sum(num_count)))
 print('Accuracy: {0}'.format(accuracy / num_objects))
 fw.write('ALL success rate: {0}\n'.format(float(sum(success_count)) / sum(num_count)))
