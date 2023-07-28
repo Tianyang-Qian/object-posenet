@@ -6,9 +6,14 @@ This is an implementation of the paper "Robust 6D Object Pose Estimation by Lear
 ![approach](assets/network.png)
 
 ## Dependencies
-* Python 3.6
-* PyTorch 1.0.1
-* CUDA 9.0
+Ubuntu 20.04, CUDA 11.3, pytorch 1.10.2
+Python == 3.6
+kaolin == 0.1.0
+opencv-python == 4.5.4.58
+imageio == 2.6.1
+pillow == 6.2.2(<7.0.0)
+matplotlib == 2.2.3(<3.0.0)
+scipy == 1.4.1
 
 ## Installation
 Compile the ransac voting layer:
