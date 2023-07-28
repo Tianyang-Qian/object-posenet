@@ -13,7 +13,6 @@ psp_models = {
     'resnet152': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet152')
 }
 
-
 class ModifiedResnet(nn.Module):
     def __init__(self, usegpu=True):
         super(ModifiedResnet, self).__init__()
@@ -23,7 +22,6 @@ class ModifiedResnet(nn.Module):
     def forward(self, x):
         x = self.model(x)
         return x
-
 
 class ModifiedDGCNN(nn.Module):
     def __init__(self, k):
@@ -117,27 +115,32 @@ class ModifiedDGCNN(nn.Module):
 
         return t_feat, r_global
 
-
+'''
+rot = 60
+'''
 class PoseNet(nn.Module):
     def __init__(self, num_points, num_obj, num_rot, k=16):
         super(PoseNet, self).__init__()
+
         self.num_points = num_points
         self.num_obj = num_obj
         self.num_rot = num_rot
 
+        # 旋转锚点
         if self.num_rot == 12:
             self.rot_anchors = sample_rotations_12()
         elif self.num_rot == 24:
             self.rot_anchors = sample_rotations_24()
         elif self.num_rot == 60:
-            self.rot_anchors = sample_rotations_60()
+            self.rot_anchors = sample_rotations_60()# 数组就包含了60个旋转四元数，它们表示了正二十面体的对称群。
         else:
             raise NotImplementedError('num of rotation anchors must be 12, 24, or 60')
+
 
         self.cnn = ModifiedResnet()
         self.pointnet = ModifiedDGCNN(k)
 
-        self.conv1_t = torch.nn.Conv1d(1152, 512, 1)
+        self.conv1_t = torch.nn.Conv1d(1152, 512, 1)#
         self.conv2_t = torch.nn.Conv1d(512, 256, 1)
         self.conv3_t = torch.nn.Conv1d(256, 128, 1)
         self.conv4_t = torch.nn.Conv1d(128, num_obj*3, 1)
@@ -157,7 +160,7 @@ class PoseNet(nn.Module):
 
         Args:
             img: bs x 3 x H x W
-            x: bs x n_p x 3
+            x: bs x n_p x 30
             choose: bs x n_p
             obj: bs x 1
 
@@ -167,6 +170,7 @@ class PoseNet(nn.Module):
             out_cx: 1 x num_rot
 
         """
+
         # PSPNet: color feature extraction
         out_img = self.cnn(img)
         # concatenate color embedding with points
@@ -175,6 +179,7 @@ class PoseNet(nn.Module):
         choose = choose.repeat(1, di, 1)
         emb = torch.gather(emb, 2, choose).contiguous()
         x = x.permute(0, 2, 1)
+
         # DGCNN: point feature extraction
         t_feat, r_global = self.pointnet(x, emb)
 
